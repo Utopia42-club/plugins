@@ -20,14 +20,7 @@ const baseParams = [
         name: "startingPosition",
         type: "position",
         required: true,
-    },
-    {
-        label: "Total Voxels Limit",
-        name: "voxelsCountLimit",
-        type: "number",
-        required: true,
-        defaultValue: 1000,
-    },
+    }
 ];
 
 function getDetails(voxels) {
@@ -58,12 +51,6 @@ async function main() {
         await fetch(new Request(inputs.voxUrl))
     ).arrayBuffer();
     const data = vox.parseMagicaVoxel(buffer);
-
-    if (data.XYZI.length > inputs.voxelsCountLimit) {
-        throw new Error(
-            `Model has a total of ${data.XYZI.length} voxels which is more than the allowed number of voxels (${inputs.voxelsCountLimit})`
-        );
-    }
 
     const pos = inputs.startingPosition;
     let x = Math.round(pos.x);
