@@ -20,7 +20,7 @@ const baseParams = [
         name: "startingPosition",
         type: "position",
         required: true,
-    }
+    },
 ];
 
 function getDetails(voxels) {
@@ -74,30 +74,23 @@ async function main() {
         middleExecutionInputs
     );
 
+    const reqs = [];
+
     for (const voxel of data.XYZI) {
         const xx = x + voxel.x - details.min.x;
         const yy = y + voxel.z - details.min.z;
         const zz = z + voxel.y - details.min.y;
 
-        let res;
-        try {
-            res = await UtopiaApi.placeBlock(
-                blockTypeInputs["bt" + voxel.c],
-                xx,
-                yy,
-                zz
-            );
-        } catch (e) {
-            console.error(
-                "Place block failed at " +
-                    xx +
-                    ", " +
-                    yy +
-                    ", " +
-                    zz +
-                    ": " +
-                    res
-            );
-        }
+        reqs.push({
+            type: blockTypeInputs["bt" + voxel.c],
+            position: {
+                x: xx,
+                y: yy,
+                z: zz,
+            },
+        });
     }
+
+    const res = await UtopiaApi.placeBlocks(reqs);
+    console.log("vox import result:", res);
 }
