@@ -91,6 +91,20 @@ async function main() {
         });
     }
 
-    const res = await UtopiaApi.placeBlocks(reqs);
-    console.log("vox import result:", res);
+    try{
+        const res = await UtopiaApi.placeBlocks(reqs);
+        const failed = [];
+        let success = 0;
+        for (const position of Object.keys(res)) {
+            if(res[position]) success++;
+            else
+                failed.push(position);
+        }
+        console.log(`Placed ${success} out of ${Object.keys(res).length} blocks.`);
+        if(failed.length > 0)
+            console.warn("Failed to place block at following positions", failed);
+    }
+    catch(e){
+        console.error("Failed to construct vox model:", e);
+    }
 }
