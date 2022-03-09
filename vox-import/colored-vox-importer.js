@@ -53,7 +53,7 @@ function getDetails(voxels) {
 }
 
 async function main() {
-    const inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser(baseParams));
+    const inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser({inputs: baseParams}));
     importScripts(inputs.parserUrl);
     const buffer = await (
         await fetch(new Request(inputs.voxUrl))

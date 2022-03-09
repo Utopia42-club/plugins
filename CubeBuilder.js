@@ -23,7 +23,7 @@ async function main() {
   
   console.log("Running Cube Builder");
   
-  var Inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser(baseInputs));
+  var Inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser({inputs: baseInputs}));
 
   var startX = Math.min(Inputs.a.x, Inputs.b.x);
   var startY = Math.min(Inputs.a.y, Inputs.b.y);
