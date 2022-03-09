@@ -23,7 +23,7 @@ async function main() {
   
   console.log("Running Cube Builder");
   
-  var Inputs = await UtopiaApi.getInputsFromUser(baseInputs);
+  var Inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser(baseInputs));
 
   var startX = Math.min(Inputs.a.x, Inputs.b.x);
   var startY = Math.min(Inputs.a.y, Inputs.b.y);
@@ -39,7 +39,7 @@ async function main() {
           (x != endX || y != endY || z != endZ) &&
           (x != startX || y != startY || z != startZ)
         )
-          await UtopiaApi.placeBlock(Inputs.blockType, x, y, z);
+        await rxjs.firstValueFrom(UtopiaApi.placeBlock(Inputs.blockType, x, y, z));
       }
     }
   }

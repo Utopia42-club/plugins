@@ -53,7 +53,7 @@ function getDetails(voxels) {
 }
 
 async function main() {
-    const inputs = await UtopiaApi.getInputsFromUser(baseParams);
+    const inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser(baseParams));
     importScripts(inputs.parserUrl);
     const buffer = await (
         await fetch(new Request(inputs.voxUrl))
@@ -78,7 +78,9 @@ async function main() {
         const zz = z + voxel.y - details.min.y;
 
         reqs.push({
-            type: colors[voxel.c],
+            type: {
+                blockType: colors[voxel.c]
+            },
             position: {
                 x: xx,
                 y: yy,
@@ -87,7 +89,7 @@ async function main() {
         });
     }
 
-    const res = await UtopiaApi.placeBlocks(reqs);
+    const res = await rxjs.firstValueFrom(UtopiaApi.placeMetaBlocks(reqs));
     const failed = [];
     let success = 0;
     for (const position of Object.keys(res)) {

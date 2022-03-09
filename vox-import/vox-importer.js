@@ -45,7 +45,7 @@ function getDetails(voxels) {
 }
 
 async function main() {
-    const inputs = await UtopiaApi.getInputsFromUser(baseParams);
+    const inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser(baseParams));
     importScripts(inputs.parserUrl);
     const buffer = await (
         await fetch(new Request(inputs.voxUrl))
@@ -70,9 +70,9 @@ async function main() {
             required: true,
         });
     }
-    const blockTypeInputs = await UtopiaApi.getInputsFromUser(
+    const blockTypeInputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser(
         middleExecutionInputs
-    );
+    ));
 
     const reqs = [];
 
@@ -82,7 +82,9 @@ async function main() {
         const zz = z + voxel.y - details.min.y;
 
         reqs.push({
-            type: blockTypeInputs["bt" + voxel.c],
+            type: {
+                blockType: blockTypeInputs["bt" + voxel.c]
+            },
             position: {
                 x: xx,
                 y: yy,
@@ -91,7 +93,7 @@ async function main() {
         });
     }
 
-    const res = await UtopiaApi.placeBlocks(reqs);
+    const res = await rxjs.firstValueFrom(UtopiaApi.placeBlocks(reqs));
     const failed = [];
     let success = 0;
     for (const position of Object.keys(res)) {
