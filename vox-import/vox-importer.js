@@ -20,24 +20,32 @@ const baseParams = [
     },
 ];
 
+const getHexStr = (x) => {
+    if (x < 10) return x.toString();
+    if (x == 10) return "a";
+    if (x == 11) return "b";
+    if (x == 12) return "c";
+    if (x == 13) return "d";
+    if (x == 14) return "e";
+    if (x == 15) return "f";
+};
+
+const intToHex = (x) => {
+    return `${getHexStr(Math.floor(x / 16))}${getHexStr(x % 16)}`;
+};
+
 function getDetails(voxels) {
     let minX = Infinity;
     let minY = Infinity;
     let minZ = Infinity;
 
-    const uniqueColorIndices = [];
-
     for (const voxel of voxels) {
         minX = voxel.x < minX ? voxel.x : minX;
         minY = voxel.y < minY ? voxel.y : minY;
         minZ = voxel.z < minZ ? voxel.z : minZ;
-
-        if (uniqueColorIndices.indexOf(voxel.c) == -1)
-            uniqueColorIndices.push(voxel.c);
     }
     return {
         min: { x: minX, y: minY, z: minZ },
-        uniqueColorIndices: uniqueColorIndices,
     };
 }
 
@@ -51,22 +59,10 @@ async function main() {
     let y = Math.round(pos.y);
     let z = Math.round(pos.z);
 
-    const colors = data.RGBA;
+    const colors = data.RGBA.map((color) => {
+        return "#" + [color.r, color.g, color.b].map(intToHex).join("");
+    });
     const details = getDetails(data.XYZI);
-
-    const middleExecutionInputs = [];
-    for (const index of details.uniqueColorIndices) {
-        const color = colors[index];
-        middleExecutionInputs.push({
-            label: `<div style="width:20px; height:20px; background:rgba(${color.r},${color.g},${color.b},${color.a}); border:1px solid black;"></div>`,
-            name: "bt" + index,
-            type: "blockType",
-            required: true,
-        });
-    }
-    const blockTypeInputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser(
-        {inputs: middleExecutionInputs}
-    ));
 
     const reqs = [];
 
@@ -77,7 +73,7 @@ async function main() {
 
         reqs.push({
             type: {
-                blockType: blockTypeInputs["bt" + voxel.c]
+                blockType: colors[voxel.c]
             },
             position: {
                 x: xx,
