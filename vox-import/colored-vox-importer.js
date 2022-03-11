@@ -8,12 +8,9 @@ const baseParams = [
             "https://cdn.jsdelivr.net/gh/Utopia42-club/plugins@1adc37a0d3c00d008856753e921419fe923f5701/vox-import/parser-lib.js",
     },
     {
-        label: "Voxel File URL",
-        name: "voxUrl",
-        type: "text",
-        required: true,
-        defaultValue:
-            "https://cdn.jsdelivr.net/gh/ephtracy/voxel-model@master/vox/character/chr_mom.vox",
+        label: "Voxel File",
+        name: "voxFile",
+        type: "file",
     },
     {
         label: "Starting Position",
@@ -55,10 +52,7 @@ function getDetails(voxels) {
 async function main() {
     const inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser({inputs: baseParams}));
     importScripts(inputs.parserUrl);
-    const buffer = await (
-        await fetch(new Request(inputs.voxUrl))
-    ).arrayBuffer();
-    const data = vox.parseMagicaVoxel(buffer);
+    const data = vox.parseMagicaVoxel(await inputs.voxFile._files[0].arrayBuffer());
 
     const pos = inputs.startingPosition;
     let x = Math.round(pos.x);
