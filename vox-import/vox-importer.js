@@ -87,7 +87,7 @@ async function main() {
         });
     }
 
-    const res = await rxjs.firstValueFrom(UtopiaApi.placeMetaBlocks(reqs));
+    const res = await rxjs.firstValueFrom(UtopiaApi.placeBlocks(reqs));
     const failed = [];
     let success = 0;
     for (const position of Object.keys(res)) {
