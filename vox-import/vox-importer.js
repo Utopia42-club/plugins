@@ -54,14 +54,14 @@ async function main() {
         inputs: baseParams,
         gridDescriptor: {
             rows: [
-              ["parserUrl"],
-              ["voxFile"],
+              ["parserUrl", "parserUrl", "parserUrl"],
+              ["voxFile", "voxFile", "voxFile"],
               ["startingPosition"]
             ]
         },
     }));
     importScripts(inputs.parserUrl);
-    const data = vox.parseMagicaVoxel(await inputs.voxFile._files[0].arrayBuffer());
+    const data = vox.parseMagicaVoxel(await inputs.voxFile.arrayBuffer());
 
     const pos = inputs.startingPosition;
     let x = Math.round(pos.x);
