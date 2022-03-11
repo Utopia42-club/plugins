@@ -50,7 +50,16 @@ function getDetails(voxels) {
 }
 
 async function main() {
-    const inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser({inputs: baseParams}));
+    const inputs = await rxjs.firstValueFrom(UtopiaApi.getInputsFromUser({
+        inputs: baseParams,
+        gridDescriptor: {
+            rows: [
+              ["parserUrl"],
+              ["voxFile"],
+              ["startingPosition"]
+            ]
+        },
+    }));
     importScripts(inputs.parserUrl);
     const data = vox.parseMagicaVoxel(await inputs.voxFile._files[0].arrayBuffer());
 
