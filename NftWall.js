@@ -77,7 +77,7 @@ const descriptor = {
                     },
                 ],
                 gridDescriptor: {
-                    rows: [["collection", "tokenId"]],
+                    rows: [["collection"], ["tokenId"]],
                 },
             },
             isList: true,
