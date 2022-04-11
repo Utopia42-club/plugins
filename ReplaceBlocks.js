@@ -7,7 +7,7 @@ const descriptor = {
             required: true,
         },
         {
-            label: "Block Type",
+            label: "ًReplace With",
             name: "blockType",
             type: "blockType",
             required: true,
