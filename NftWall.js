@@ -1,10 +1,27 @@
 const descriptor = {
     inputs: [
         {
-            label: "Starting Position",
-            name: "startingPosition",
+            label: "Wall First Corner",
+            name: "firstCorner",
             type: "position",
             required: true,
+        },
+        {
+            label: "Wall Second Corner",
+            name: "secondCorner",
+            type: "position",
+            required: true,
+        },
+        {
+            label: "Create Wall",
+            name: "createWall",
+            type: "selection",
+            defaultValue: "yes",
+            required: true,
+            options: [
+                { key: "yes", value: "yes" },
+                { key: "no", value: "no" },
+            ],
         },
         {
             label: "Wall Block Type",
@@ -86,7 +103,8 @@ const descriptor = {
     ],
     gridDescriptor: {
         rows: [
-            ["startingPosition", "wallBlockType", "items", "items"],
+            ["firstCorner", "secondCorner", "items", "items"],
+            ["createWall", "wallBlockType", "items", "items"],
             ["horizontalGap", "verticalGap", "items", "items"],
             ["rowsCount", "columnsCount", "items", "items"],
             ["width", "height", "items", "items"],
@@ -99,50 +117,70 @@ async function main() {
         UtopiaApi.getInputsFromUser(descriptor)
     );
 
-    const playerPosition = await rxjs.firstValueFrom(
+    const playerPositionRaw = await rxjs.firstValueFrom(
         UtopiaApi.getPlayerPosition()
     );
 
+    const playerPosition = {
+        x: Math.floor(playerPositionRaw.x),
+        y: Math.floor(playerPositionRaw.y),
+        z: Math.floor(playerPositionRaw.z),
+    };
+
+    const firstCorner = {
+        x: Math.floor(inputs.firstCorner.x),
+        y: Math.floor(inputs.firstCorner.y),
+        z: Math.floor(inputs.firstCorner.z),
+    };
+    
+    const secondCorner = {
+        x: Math.floor(inputs.secondCorner.x),
+        y: Math.floor(inputs.secondCorner.y),
+        z: Math.floor(inputs.secondCorner.z),
+    };
+
+    if (firstCorner.x != secondCorner.x && firstCorner.z != secondCorner.z)
+        throw new Error("Invalid wall corners");
+
+    const drawAlongX = firstCorner.x != secondCorner.x;
+
+    const wallWidth =
+        1 + (drawAlongX
+            ? Math.abs(firstCorner.x - secondCorner.x)
+            : Math.abs(firstCorner.z - secondCorner.z));
+    const wallHeight = Math.abs(firstCorner.y - secondCorner.y) + 1;
+
     const startingPosition = {
-        x: Math.floor(inputs.startingPosition.x),
-        y: Math.floor(inputs.startingPosition.y),
-        z: Math.floor(inputs.startingPosition.z),
+        x: drawAlongX
+            ? firstCorner.z >= playerPosition.z
+                ? Math.min(firstCorner.x, secondCorner.x)
+                : Math.max(firstCorner.x, secondCorner.x)
+            : firstCorner.x,
+        y: Math.min(firstCorner.y, secondCorner.y),
+        z: !drawAlongX
+            ? firstCorner.x >= playerPosition.x
+                ? Math.max(firstCorner.z, secondCorner.z)
+                : Math.min(firstCorner.z, secondCorner.z)
+            : firstCorner.z,
     };
 
     const wallRelativeStartingPosition = {
-        x: startingPosition.x - Math.floor(playerPosition.x),
-        y: startingPosition.y - Math.floor(playerPosition.y),
-        z: startingPosition.z - Math.floor(playerPosition.z)
+        x: startingPosition.x - playerPosition.x,
+        y: startingPosition.y - playerPosition.y,
+        z: startingPosition.z - playerPosition.z,
     };
-
-    const start = {
-        x: startingPosition.x,
-        y: startingPosition.y,
-        z: startingPosition.z,
-    };
-
-    const wallWidth =
-        (inputs.columnsCount + 1) * inputs.horizontalGap +
-        inputs.columnsCount * inputs.width;
-    const wallHeight =
-        (inputs.rowsCount + 1) * inputs.verticalGap +
-        inputs.rowsCount * inputs.height;
-
-    const drawAlongX =
-        Math.abs(wallRelativeStartingPosition.x) <
-        Math.abs(wallRelativeStartingPosition.z);
 
     const incrementor = (w, y) => {
         return {
             x:
-                start.x +
+                startingPosition.x +
                 (drawAlongX ? w : 0) *
-                (wallRelativeStartingPosition.z >= 0 ? 1 : -1),
+                    (wallRelativeStartingPosition.z >= 0 ? 1 : -1),
             z:
-                start.z +
+                startingPosition.z +
                 (drawAlongX ? 0 : w) *
-                (wallRelativeStartingPosition.x >= 0 ? -1 : 1),
-            y: start.y + y,
+                    (wallRelativeStartingPosition.x >= 0 ? -1 : 1),
+            y: startingPosition.y + y,
         };
     };
 
@@ -158,7 +196,7 @@ async function main() {
         )
             return (
                 (w - inputs.horizontalGap) %
-                (inputs.horizontalGap + inputs.width) ==
+                    (inputs.horizontalGap + inputs.width) ==
                 0
             );
         return (w + 1) % (inputs.horizontalGap + inputs.width) == 0;
@@ -169,17 +207,28 @@ async function main() {
             ? "back"
             : "front"
         : wallRelativeStartingPosition.x >= 0
-            ? "left"
-            : "right";
+        ? "left"
+        : "right";
 
     const nftWallData = [];
 
-    for (let y = wallHeight - 1; y >= 0; y--)
+    let usedRowsCount = 0;
+    for (let y = 0; y < wallHeight; y++) {
+        console.log("outer loop");
+        let usedColumnsCount = 0;
         for (let w = 0; w < wallWidth; w++) {
+            console.log("inner loop");
             const pos = incrementor(w, y);
 
             let metaBlock = null;
-            if (isMetaCandidate(w, y) && inputs.items != null && inputs.items.length > 0) {
+            if (
+                usedColumnsCount < inputs.columnsCount &&
+                usedRowsCount < inputs.rowsCount &&
+                isMetaCandidate(w, y) &&
+                inputs.items != null &&
+                inputs.items.length > 0
+            ) {
+                usedColumnsCount += 1;
                 metaBlock = {
                     type: "nft",
                     properties: {},
@@ -194,17 +243,31 @@ async function main() {
                 };
             }
 
-            nftWallData.push({
-                position: pos,
-                type: {
-                    blockType: inputs.wallBlockType,
-                    metaBlock: metaBlock,
-                },
-            });
+            const blockType =
+                inputs.createWall == "yes" ? inputs.wallBlockType : null;
+
+            if (metaBlock != null || blockType != null)
+                nftWallData.push({
+                    position: pos,
+                    type: {
+                        blockType,
+                        metaBlock,
+                    },
+                });
         }
+        if (usedColumnsCount > 0) {
+            usedRowsCount += 1;
+        }
+    }
 
     const result = await rxjs.firstValueFrom(
         UtopiaApi.placeBlocks(nftWallData)
     );
     console.log(JSON.stringify(result));
+
+    if (inputs.items.length > 0) {
+        console.warn(
+            `Could not place ${inputs.items.length} images. Choose wall corners carefully`
+        );
+    }
 }
