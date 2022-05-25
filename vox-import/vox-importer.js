@@ -18,6 +18,17 @@ const baseParams = [
         type: "position",
         required: true,
     },
+    {
+        label: "Preview",
+        name: "preview",
+        type: "selection",
+        defaultValue: "yes",
+        required: true,
+        options: [
+            { key: "yes", value: "yes" },
+            { key: "no", value: "no" },
+        ],
+    },
 ];
 
 const getHexStr = (x) => {
@@ -90,6 +101,11 @@ async function main() {
                 z: zz,
             },
         });
+    }
+
+    if(inputs.preview == "yes") {
+        await rxjs.firstValueFrom(UtopiaApi.previewBlocks(reqs));
+        return;
     }
 
     const res = await rxjs.firstValueFrom(UtopiaApi.placeBlocks(reqs));
