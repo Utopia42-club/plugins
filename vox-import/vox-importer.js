@@ -19,7 +19,7 @@ const baseParams = [
         required: true,
     },
     {
-        label: "Preview",
+        label: "Show Preview",
         name: "preview",
         type: "selection",
         defaultValue: "yes",
@@ -67,7 +67,7 @@ async function main() {
             rows: [
               ["parserUrl", "parserUrl", "parserUrl"],
               ["voxFile", "voxFile", "voxFile"],
-              ["startingPosition"]
+              ["startingPosition", "preview"]
             ]
         },
     }));
