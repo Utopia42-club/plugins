@@ -105,9 +105,7 @@ async function main() {
                 if (blockType == targetBlockType) {
                     blocks.push({
                         position: { x, y, z },
-                        type: {
-                            blockType: inputs.blockType,
-                        },
+                        name: inputs.blockType,
                     });
                 }
             }

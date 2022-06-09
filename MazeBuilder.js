@@ -61,9 +61,7 @@ async function main() {
                         y: zero.y + y,
                         z: zero.z + z,
                     },
-                    type: {
-                        blockType: char == "1" ? Inputs.blockType : "air",
-                    },
+                    name: char == "1" ? Inputs.blockType : "air",
                 });
             }
         }
