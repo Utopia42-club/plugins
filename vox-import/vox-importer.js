@@ -92,9 +92,7 @@ async function main() {
         const zz = z + voxel.y - details.min.y;
 
         reqs.push({
-            type: {
-                blockType: colors[voxel.c]
-            },
+            name: colors[voxel.c],
             position: {
                 x: xx,
                 y: yy,
